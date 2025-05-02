@@ -31,11 +31,11 @@ export default function Footer() {
                 <span>(415) 843-7975</span>
               </a>
               <a 
-                href="mailto:info@rwbpropertygroup.com"
+                href="mailto:info@gilbuyshomes.com"
                 className="flex items-center space-x-2 text-footer-text/80 hover:text-footer-hover transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                <span>info@rwbpropertygroup.com</span>
+                <span>info@gilbuyshomes.com</span>
               </a>
             </div>
           </div>

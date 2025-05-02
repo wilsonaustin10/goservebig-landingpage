@@ -9,7 +9,7 @@ const nextConfig = {
   poweredByHeader: false,
   // Configure image domains if needed
   images: {
-    domains: ['localhost', 'offer.xvrbuyshouses.com'],
+    domains: ['localhost', 'offer.rwbpropertygroup.com'],
   },
   // Add domain for Maps API
   async headers() {
@@ -19,7 +19,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: `frame-ancestors 'self' https://offer.xvrbuyshouses.com`
+            value: `frame-ancestors 'self' https://offer.rwbpropertygroup.com`
           }
         ]
       }

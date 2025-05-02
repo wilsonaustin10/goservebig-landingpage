@@ -19,6 +19,8 @@ export interface LeadFormData {
   propertyCondition?: string;
   timeframe?: string;
   price?: string;
+  comments?: string;
+  referralSource?: string;
 
   // System tracking
   timestamp?: string;

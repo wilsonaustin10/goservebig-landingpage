@@ -8,16 +8,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#000000', // Black
-        secondary: '#89CFF0', // Baby blue
-        accent: '#89CFF0', // Baby blue
-        highlight: '#89CFF0', // Baby blue for consistent highlighting
+        primary: '#1A4B8C', // Navy blue
+        secondary: '#E41F2D', // Red
+        accent: '#E41F2D', // Red
+        highlight: '#1A4B8C', // Navy blue for consistent highlighting
         background: '#ffffff', // White
         text: '#333333', // Dark gray for regular text
         footer: {
-          bg: '#000000', // Black
+          bg: '#1A4B8C', // Navy blue
           text: '#ffffff', // White
-          hover: '#89CFF0', // Baby blue
+          hover: '#E41F2D', // Red
         }
       },
     },

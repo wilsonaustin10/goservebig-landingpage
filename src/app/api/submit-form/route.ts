@@ -31,38 +31,161 @@ function validateFormData(data: Partial<LeadFormData>): data is LeadFormData {
   return true;
 }
 
-// Send data to Zapier webhook
-async function sendToZapier(data: LeadFormData) {
-  if (!process.env.ZAPIER_WEBHOOK_URL) {
-    throw new Error('Zapier webhook URL not configured');
+// Send data to Go High Level API
+async function sendToGoHighLevel(data: LeadFormData) {
+  if (!process.env.GO_HIGH_LEVEL_API_KEY || !process.env.GO_HIGH_LEVEL_LOCATION_ID) {
+    throw new Error('Go High Level API credentials not configured');
   }
 
   try {
-    const response = await fetch(process.env.ZAPIER_WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    // Format phone number for API (remove formatting)
+    const phone = data.phone ? data.phone.replace(/\D/g, '') : '';
+    
+    // Create a comprehensive notes section with all form data
+    const formattedTimestamp = new Date().toLocaleString();
+    let notes = `Complete Lead Submission (${formattedTimestamp}):\n\n`;
+    
+    // Property Information
+    notes += `PROPERTY INFORMATION:\n`;
+    notes += `- Property Address: ${data.address || 'Not provided'}\n`;
+    if (data.streetAddress) notes += `- Street Address: ${data.streetAddress}\n`;
+    if (data.city) notes += `- City: ${data.city}\n`;
+    if (data.state) notes += `- State: ${data.state}\n`;
+    if (data.postalCode) notes += `- Postal Code: ${data.postalCode}\n`;
+    if (data.placeId) notes += `- Google Place ID: ${data.placeId}\n`;
+    notes += `- Property Condition: ${data.propertyCondition || 'Not provided'}\n`;
+    notes += `- Is Property Listed: ${data.isPropertyListed ? 'Yes' : 'No'}\n`;
+    notes += `- Asking Price: ${data.price || 'Not provided'}\n`;
+    notes += `- Timeframe: ${data.timeframe || 'Not provided'}\n`;
+    
+    // Contact Information
+    notes += `\nCONTACT INFORMATION:\n`;
+    notes += `- Full Name: ${data.firstName} ${data.lastName}\n`;
+    notes += `- Phone: ${data.phone}\n`;
+    notes += `- Email: ${data.email}\n`;
+    
+    // Additional Details
+    notes += `\nADDITIONAL DETAILS:\n`;
+    notes += `- Lead ID: ${data.leadId}\n`;
+    notes += `- Initial Submission: ${data.timestamp || 'Unknown'}\n`;
+    notes += `- Complete Submission: ${formattedTimestamp}\n`;
+    
+    if (data.comments) {
+      notes += `\nCOMMENTS:\n${data.comments}\n`;
+    }
+    
+    if (data.referralSource) {
+      notes += `\nReferral Source: ${data.referralSource}\n`;
+    }
+    
+    // Prepare contact data for Go High Level
+    const contactData = {
+      name: `${data.firstName} ${data.lastName}`,
+      phone: phone,
+      email: data.email,
+      address1: data.address || '',
+      city: data.city || '',
+      state: data.state || '',
+      postalCode: data.postalCode || '',
+      locationId: process.env.GO_HIGH_LEVEL_LOCATION_ID,
+      source: 'Website Lead Form',
+      
+      // Map fields directly to Go High Level custom fields using provided keys
+      customField: {
+        "ppc_address": data.address || '',
+        "ppc_condition": data.propertyCondition || '',
+        "ppc_timeframe": data.timeframe || '',
+        "ppc_property_listed": data.isPropertyListed ? 'Yes' : 'No',
+        "ppc_asking_price": data.price || ''
       },
-      body: JSON.stringify({
-        ...data,
+      
+      tags: ['Website Lead', 'Complete Lead'],
+      notes: notes,
+      customData: {
+        leadId: data.leadId,
         submissionType: 'complete',
         timestamp: new Date().toISOString()
-      })
+      }
+    };
+
+    // First search if the lead with this ID already exists
+    const searchResponse = await fetch(`https://rest.gohighlevel.com/v1/contacts/lookup?locationId=${process.env.GO_HIGH_LEVEL_LOCATION_ID}&lookupField=phone&lookupValue=${phone}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.GO_HIGH_LEVEL_API_KEY}`
+      }
     });
+
+    let response;
+    
+    if (searchResponse.ok) {
+      const searchResult = await searchResponse.json();
+      
+      if (searchResult.contacts && searchResult.contacts.length > 0) {
+        // Contact exists, update it
+        const contactId = searchResult.contacts[0].id;
+        
+        // For updates, append a note instead of overwriting existing notes
+        const getContactResponse = await fetch(`https://rest.gohighlevel.com/v1/contacts/${contactId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${process.env.GO_HIGH_LEVEL_API_KEY}`
+          }
+        });
+        
+        if (getContactResponse.ok) {
+          const contactDetails = await getContactResponse.json();
+          
+          // Append new notes to existing notes if there are any
+          if (contactDetails && contactDetails.notes) {
+            contactData.notes = `${contactDetails.notes}\n\n${notes}`;
+          }
+        }
+        
+        response = await fetch(`https://rest.gohighlevel.com/v1/contacts/${contactId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.GO_HIGH_LEVEL_API_KEY}`
+          },
+          body: JSON.stringify(contactData)
+        });
+      } else {
+        // Contact doesn't exist, create new one
+        response = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.GO_HIGH_LEVEL_API_KEY}`
+          },
+          body: JSON.stringify(contactData)
+        });
+      }
+    } else {
+      // Search failed, try to create a new contact
+      response = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.GO_HIGH_LEVEL_API_KEY}`
+        },
+        body: JSON.stringify(contactData)
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Zapier webhook error:', {
+      console.error('Go High Level API error:', {
         status: response.status,
         statusText: response.statusText,
         error: errorText
       });
-      throw new Error(`Failed to send to Zapier: ${response.statusText}`);
+      throw new Error(`Failed to send to Go High Level: ${response.statusText}`);
     }
 
     return response.json();
   } catch (error) {
-    console.error('Error in sendToZapier:', error);
+    console.error('Error in sendToGoHighLevel:', error);
     throw error;
   }
 }
@@ -121,17 +244,18 @@ export async function POST(request: Request) {
       lastUpdated: timestamp
     };
 
-    // 4. Send to Zapier webhook
+    // 4. Send to Go High Level API
     try {
-      await sendToZapier(formData);
-      console.log('Successfully sent to Zapier webhook');
+      const result = await sendToGoHighLevel(formData);
+      console.log('Successfully sent to Go High Level API');
       
       return NextResponse.json({ 
         success: true,
-        leadId: formData.leadId
+        leadId: formData.leadId,
+        contactId: result.id
       });
     } catch (error) {
-      console.error('Failed to send to Zapier:', error);
+      console.error('Failed to send to Go High Level:', error);
       throw error;
     }
 

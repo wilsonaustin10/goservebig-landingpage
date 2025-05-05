@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ThumbsUp, ThumbsDown, Phone } from 'lucide-react';
 import { useForm } from '../../context/FormContext';
@@ -10,6 +10,18 @@ import Link from 'next/link';
 export default function PropertyListedPage() {
   const router = useRouter();
   const { updateFormData } = useForm();
+
+  useEffect(() => {
+    // Track partial lead conversion when user reaches this page
+    trackEvent('property_listed_page_view');
+    
+    // Google Ads conversion tracking for partial lead
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-17041108639/sghECKX6-fkYELD4yf8p',
+      });
+    }
+  }, []);
 
   const handleChoice = (isListed: boolean) => {
     updateFormData({ isPropertyListed: isListed });

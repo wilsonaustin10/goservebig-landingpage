@@ -10,6 +10,12 @@ export default function ThankYouPage() {
 
   useEffect(() => {
     trackEvent('thank_you_page_view');
+    
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-17041108639/fLFZCLzz-fkYELD4yf8p',
+      });
+    }
   }, []);
 
   return (

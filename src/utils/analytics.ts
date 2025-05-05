@@ -2,7 +2,6 @@ declare global {
   interface Window {
     dataLayer: any[];
     gtag: (...args: any[]) => void;
-    gtag_report_conversion: (url?: string) => boolean;
   }
 }
 
@@ -21,6 +20,11 @@ export const initializeAnalytics = () => {
     
     window.gtag('js', new Date());
     window.gtag('config', gaId);
+    
+    // Also configure Google Ads tag
+    if (process.env.NEXT_PUBLIC_GOOGLE_ADS_ID) {
+      window.gtag('config', process.env.NEXT_PUBLIC_GOOGLE_ADS_ID);
+    }
   }
 };
 
@@ -30,9 +34,12 @@ export const trackEvent = (eventName: string, params?: Record<string, any>) => {
   }
 };
 
-export const trackConversion = (url?: string) => {
-  if (typeof window !== 'undefined' && window.gtag_report_conversion) {
-    return window.gtag_report_conversion(url);
+// Track a Google Ads conversion
+export const trackConversion = (conversionId: string, conversionLabel: string, params?: Record<string, any>) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'conversion', {
+      'send_to': `${conversionId}/${conversionLabel}`,
+      ...params
+    });
   }
-  return false;
 }; 

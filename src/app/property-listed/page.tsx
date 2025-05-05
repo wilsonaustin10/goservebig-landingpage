@@ -30,7 +30,7 @@ export default function PropertyListedPage() {
 
             <div className="mb-12">
               <Link
-                href="tel:(732) 800-5097"
+                href="tel: (732) 800-5097"
                 className="inline-block bg-secondary hover:bg-opacity-90 text-black px-8 py-4 rounded-md text-xl font-medium transition-colors"
               >
                 Call Us Now: (732) 800-5097

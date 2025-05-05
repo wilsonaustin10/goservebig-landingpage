@@ -24,11 +24,11 @@ export default function Footer() {
             </p>
             <div className="space-y-2">
               <a 
-                href="tel:(415) 843-7975"
+                href="tel: (732) 800-5097"
                 className="flex items-center space-x-2 text-footer-text/80 hover:text-footer-hover transition-colors"
               >
                 <Phone className="h-4 w-4" />
-                <span>(415) 843-7975</span>
+                <span>(732) 800-5097</span>
               </a>
               <a 
                 href="mailto:chris@rwbpropertygroup.com"

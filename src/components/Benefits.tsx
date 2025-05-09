@@ -16,14 +16,14 @@ export function Benefits({ className }: BenefitsProps) {
   ]
 
   return (
-    <div className={`max-w-3xl mx-auto my-16 px-4 ${className}`}>
+    <div className={`max-w-3xl mx-auto my-16 px-4 text-center ${className}`}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {benefits.map((benefit, index) => (
-          <div key={index} className="flex items-center space-x-3 text-xl font-bold">
-            <div className="relative flex-shrink-0">
+          <div key={index} className="flex flex-col items-center justify-center space-y-2 text-xl font-bold">
+            <div className="relative">
               <CheckCircle className="h-8 w-8 text-accent stroke-[2.5] drop-shadow-[0_0_3px_rgba(255,255,255,0.8)]" />
             </div>
-            <span className="text-primary text-xl font-bold text-outline-white">{benefit}</span>
+            <span className="text-primary text-2xl font-bold">{benefit}</span>
           </div>
         ))}
       </div>

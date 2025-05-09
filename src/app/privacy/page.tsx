@@ -12,7 +12,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-semibold mb-3 text-gray-800">1. Introduction</h2>
               <p>
-                RWB Property Group ("we," "our," or "us") respects your privacy and is committed to protecting 
+                Go Big Serve LLC ("we," "our," or "us") respects your privacy and is committed to protecting 
                 it through our compliance with this policy. This policy describes the types of information we 
                 may collect from you or that you may provide when you visit our website and our practices for 
                 collecting, using, maintaining, protecting, and disclosing that information.
@@ -128,8 +128,8 @@ export default function PrivacyPolicy() {
               <p>
                 To ask questions or comment about this privacy policy and our privacy practices, contact us at: 
                 <br />
-                <a href="mailto:chris@rwbpropertygroup.com" className="text-primary hover:underline">
-                  chris@rwbpropertygroup.com
+                <a href="mailto:contact@goservebig.com" className="text-primary hover:underline">
+                  contact@goservebig.com
                 </a>
                 <br />
                 <a href="tel:(732) 800-5097" className="text-primary hover:underline">

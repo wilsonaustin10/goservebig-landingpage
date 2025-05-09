@@ -12,9 +12,9 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center">
               <Image
-                src="/RWBProperty.png"
-                alt="RWB Property Group"
-                width={600}
+                src="/GoBigServeBlack.png"
+                alt="Go Big Serve LLC"
+                width={160}
                 height={160}
                 className="mr-2"
               />
@@ -31,11 +31,11 @@ export default function Footer() {
                 <span>(732) 800-5097</span>
               </a>
               <a 
-                href="mailto:chris@rwbpropertygroup.com"
+                href="mailto:contact@goservebig.com"
                 className="flex items-center space-x-2 text-footer-text/80 hover:text-footer-hover transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                <span>chris@rwbpropertygroup.com</span>
+                <span>contact@goservebig.com</span>
               </a>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-footer-text/20 text-center text-footer-text/80">
-          <p>© {new Date().getFullYear()} RWB Property Group. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Go Big Serve LLC. All rights reserved.</p>
           <div className="mt-2 space-x-4">
             <Link href="/privacy" className="hover:text-footer-hover transition-colors">
               Privacy Policy

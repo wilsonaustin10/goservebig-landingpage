@@ -12,7 +12,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-xl font-semibold mb-3 text-gray-800">1. Acceptance of Terms</h2>
               <p>
-                By accessing or using the website of RWB Property Group ("Company," "we," "us," or "our"), you agree to comply 
+                By accessing or using the website of Go Big Serve LLC ("Company," "we," "us," or "our"), you agree to comply 
                 with and be bound by these Terms of Service. If you do not agree to these terms, please do not use our website.
               </p>
             </section>
@@ -29,7 +29,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-xl font-semibold mb-3 text-gray-800">3. Services</h2>
               <p>
-                RWB Property Group provides services related to real estate, including but not limited to buying properties 
+                Go Big Serve LLC provides services related to real estate, including but not limited to buying properties 
                 in various conditions. The Company is not a real estate agency but operates as a property investment company 
                 that purchases properties directly from sellers.
               </p>
@@ -66,7 +66,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-xl font-semibold mb-3 text-gray-800">7. Intellectual Property</h2>
               <p>
-                The website and its original content, features, and functionality are owned by RWB Property Group and are 
+                The website and its original content, features, and functionality are owned by Go Big Serve LLC and are 
                 protected by international copyright, trademark, patent, trade secret, and other intellectual property or 
                 proprietary rights laws.
               </p>
@@ -84,7 +84,7 @@ export default function TermsOfService() {
               <h2 className="text-xl font-semibold mb-3 text-gray-800">9. Third-Party Links</h2>
               <p>
                 Our website may contain links to third-party websites or services that are not owned or controlled by 
-                RWB Property Group. We have no control over, and assume no responsibility for, the content, privacy policies, 
+                Go Big Serve LLC. We have no control over, and assume no responsibility for, the content, privacy policies, 
                 or practices of any third-party websites or services.
               </p>
             </section>
@@ -92,7 +92,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-xl font-semibold mb-3 text-gray-800">10. Limitation of Liability</h2>
               <p>
-                In no event shall RWB Property Group, nor its directors, employees, partners, agents, suppliers, or affiliates, 
+                In no event shall Go Big Serve LLC, nor its directors, employees, partners, agents, suppliers, or affiliates, 
                 be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, 
                 loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or 
                 inability to access or use the website.
@@ -102,7 +102,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-xl font-semibold mb-3 text-gray-800">11. Indemnification</h2>
               <p>
-                You agree to defend, indemnify, and hold harmless RWB Property Group and its licensees and licensors, and their 
+                You agree to defend, indemnify, and hold harmless Go Big Serve LLC and its licensees and licensors, and their 
                 employees, contractors, agents, officers, and directors, from and against any and all claims, damages, obligations, 
                 losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees).
               </p>
@@ -138,8 +138,8 @@ export default function TermsOfService() {
               <p>
                 If you have any questions about these Terms, please contact us at:
                 <br />
-                <a href="mailto:chris@rwbpropertygroup.com" className="text-primary hover:underline">
-                  chris@rwbpropertygroup.com
+                <a href="mailto:contact@goservebig.com" className="text-primary hover:underline">
+                  contact@goservebig.com
                 </a>
                 <br />
                 <a href="tel:(732) 800-5097" className="text-primary hover:underline">

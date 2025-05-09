@@ -9,10 +9,10 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <div className="relative w-[250px] h-[60px]">
+            <div className="relative w-[320px] h-[85px]">
               <Image
-                src="/RWBProperty.png"
-                alt="RWB Property Group"
+                src="/Go Big Serve Logo 600x160.png"
+                alt="Go Big Serve LLC"
                 fill
                 style={{ objectFit: 'contain' }}
                 priority

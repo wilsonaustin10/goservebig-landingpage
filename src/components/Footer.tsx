@@ -24,18 +24,18 @@ export default function Footer() {
             </p>
             <div className="space-y-2">
               <a 
-                href="tel: (732) 800-5097"
+                href="tel: (469)-415-9588"
                 className="flex items-center space-x-2 text-footer-text/80 hover:text-footer-hover transition-colors"
               >
                 <Phone className="h-4 w-4" />
-                <span>(732) 800-5097</span>
+                <span>(469) 415-9588</span>
               </a>
               <a 
-                href="mailto:contact@goservebig.com"
+                href="mailto:contact@goservebigllc.com"
                 className="flex items-center space-x-2 text-footer-text/80 hover:text-footer-hover transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                <span>contact@goservebig.com</span>
+                <span>contact@goservebigllc.com</span>
               </a>
             </div>
           </div>

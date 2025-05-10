@@ -49,7 +49,7 @@ export default function RootLayout({
           src="https://www.googletagmanager.com/gtag/js?id=AW-17041108639"
         />
         <Script
-          id="gtag-init"
+          id="gtag-init-existing"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
@@ -57,6 +57,23 @@ export default function RootLayout({
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', 'AW-17041108639');
+            `,
+          }}
+        />
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-376237540"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init-new"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-376237540');
             `,
           }}
         />

@@ -12,7 +12,7 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center">
               <Image
-                src="/GoBigServeBlack.png"
+                src="/Go Big Serve Logo.png"
                 alt="Go Big Serve LLC"
                 width={160}
                 height={160}

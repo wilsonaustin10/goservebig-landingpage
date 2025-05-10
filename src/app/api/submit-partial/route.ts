@@ -17,81 +17,49 @@ function validatePartialData(data: Partial<LeadFormData>): boolean {
   return true;
 }
 
-// Send data to Go High Level API
-async function sendToGoHighLevel(data: Partial<LeadFormData>) {
-  if (!process.env.GO_HIGH_LEVEL_API_KEY || !process.env.GO_HIGH_LEVEL_LOCATION_ID) {
-    throw new Error('Go High Level API credentials not configured');
+// Send data to Zapier webhook
+async function sendToZapier(data: Partial<LeadFormData>) {
+  // Debug log to check environment variable
+  console.log('ZAPIER_WEBHOOK_URL value:', process.env.ZAPIER_WEBHOOK_URL);
+  
+  // Use environment variable or fallback to the value from .env.local if it exists
+  const webhookUrl = process.env.ZAPIER_WEBHOOK_URL;
+  
+  if (!webhookUrl) {
+    throw new Error('Zapier webhook URL not configured');
   }
 
   try {
-    // Format phone number for API (remove formatting)
-    const phone = data.phone ? data.phone.replace(/\D/g, '') : '';
-    
-    // Create a formatted notes section with all form data
-    const formattedTimestamp = new Date().toLocaleString();
-    let notes = `Initial Lead Submission (${formattedTimestamp}):\n`;
-    notes += `- Property Address: ${data.address || 'Not provided'}\n`;
-    notes += `- Phone: ${data.phone || 'Not provided'}\n`;
-    
-    if (data.consent) {
-      notes += `- Consent: Granted\n`;
-    }
-    
-    if (data.placeId) {
-      notes += `- Google Place ID: ${data.placeId}\n`;
-    }
-    
-    if (data.leadId) {
-      notes += `- Lead ID: ${data.leadId}\n`;
-    }
-    
-    // Prepare contact data for Go High Level
-    const contactData = {
-      name: 'Property Lead', // Will be updated when full info is provided
-      phone: phone,
-      address1: data.address || '',
-      locationId: process.env.GO_HIGH_LEVEL_LOCATION_ID,
-      source: 'Website Lead Form',
-      
-      // Map fields directly to Go High Level custom fields
-      customField: {
-        // Use the provided custom field keys from Go High Level
-        "ppc_address": data.address || '',
-        // Additional fields will be added in the complete submission
-      },
-      
-      tags: ['Website Lead', 'Partial Lead'],
-      notes: notes,
-      customData: {
-        leadId: data.leadId,
-        submissionType: 'partial',
-        timestamp: new Date().toISOString()
-      }
+    // Create a formatted payload for Zapier
+    const payload = {
+      ...data,
+      submissionType: 'partial',
+      formattedTimestamp: new Date().toLocaleString(),
+      phoneRaw: data.phone ? data.phone.replace(/\D/g, '') : ''
     };
 
-    // Send to Go High Level API
-    const response = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
+    // Send to Zapier webhook
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GO_HIGH_LEVEL_API_KEY}`
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(contactData)
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Go High Level API error:', {
+      console.error('Zapier webhook error:', {
         status: response.status,
         statusText: response.statusText,
         error: errorText
       });
-      throw new Error(`Failed to send to Go High Level: ${response.statusText}`);
+      throw new Error(`Failed to send to Zapier: ${response.statusText}`);
     }
 
-    return response.json();
+    return await response.json();
   } catch (error) {
-    console.error('Error in sendToGoHighLevel:', error);
+    console.error('Error in sendToZapier:', error);
     throw error;
   }
 }
@@ -161,18 +129,17 @@ export async function POST(request: Request) {
       submissionType: 'partial'
     });
 
-    // Send to Go High Level API
+    // Send to Zapier webhook
     try {
-      const result = await sendToGoHighLevel(leadData);
-      console.log('Successfully sent to Go High Level API');
+      const result = await sendToZapier(leadData);
+      console.log('Successfully sent to Zapier webhook');
       
       return NextResponse.json({ 
         success: true,
-        leadId,
-        contactId: result.id // Store the contact ID from Go High Level for later updates
+        leadId
       });
     } catch (error) {
-      console.error('Failed to send to Go High Level:', error);
+      console.error('Failed to send to Zapier:', error);
       throw error;
     }
 

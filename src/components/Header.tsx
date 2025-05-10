@@ -11,7 +11,7 @@ export default function Header() {
           <Link href="/" className="flex items-center">
             <div className="relative w-[320px] h-[85px]">
               <Image
-                src="/Go Big Serve Logo 600x160.png"
+                src="/Go Big Serve Logo 600x160 (2).png"
                 alt="Go Big Serve LLC"
                 fill
                 style={{ objectFit: 'contain' }}

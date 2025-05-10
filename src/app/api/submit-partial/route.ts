@@ -20,13 +20,17 @@ function validatePartialData(data: Partial<LeadFormData>): boolean {
 // Send data to Zapier webhook
 async function sendToZapier(data: Partial<LeadFormData>) {
   // Debug log to check environment variable
-  console.log('ZAPIER_WEBHOOK_URL value:', process.env.ZAPIER_WEBHOOK_URL);
+  console.log('ZAPIER_WEBHOOK_URL status:', {
+    exists: !!process.env.ZAPIER_WEBHOOK_URL,
+    isDefined: typeof process.env.ZAPIER_WEBHOOK_URL !== 'undefined',
+    isPlaceholder: process.env.ZAPIER_WEBHOOK_URL === 'YOUR_ZAPIER_WEBHOOK_URL'
+  });
   
-  // Use environment variable or fallback to the value from .env.local if it exists
   const webhookUrl = process.env.ZAPIER_WEBHOOK_URL;
   
-  if (!webhookUrl) {
-    throw new Error('Zapier webhook URL not configured');
+  if (!webhookUrl || webhookUrl === 'YOUR_ZAPIER_WEBHOOK_URL') {
+    console.error('Invalid Zapier webhook URL configuration');
+    throw new Error('Zapier webhook URL not properly configured');
   }
 
   try {
@@ -52,7 +56,8 @@ async function sendToZapier(data: Partial<LeadFormData>) {
       console.error('Zapier webhook error:', {
         status: response.status,
         statusText: response.statusText,
-        error: errorText
+        error: errorText,
+        webhookUrl: webhookUrl.substring(0, 20) + '...' // Log partial URL for debugging
       });
       throw new Error(`Failed to send to Zapier: ${response.statusText}`);
     }

@@ -138,12 +138,12 @@ export default function TermsOfService() {
               <p>
                 If you have any questions about these Terms, please contact us at:
                 <br />
-                <a href="mailto:contact@goservebig.com" className="text-primary hover:underline">
-                  contact@goservebig.com
+                <a href="mailto:contact@goservebigllc.com" className="text-primary hover:underline">
+                  contact@goservebigllc.com
                 </a>
                 <br />
-                <a href="tel:(732) 800-5097" className="text-primary hover:underline">
-                  (732) 800-5097
+                <a href="tel:(469) 415-9588" className="text-primary hover:underline">
+                  (469) 415-9588
                 </a>
               </p>
             </section>

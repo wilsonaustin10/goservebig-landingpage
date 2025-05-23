@@ -32,6 +32,8 @@ export interface LeadFormData {
 export interface FormState extends LeadFormData {
   isSubmitting?: boolean;
   error?: string;
+  carrier?: string;
+  phoneLineType?: string;
 }
 
 export type FormStep = 

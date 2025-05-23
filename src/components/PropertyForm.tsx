@@ -13,6 +13,7 @@ interface FormErrors {
   phone?: string;
   consent?: string;
   submit?: string;
+  phoneApi?: string; // For Numverify API errors
 }
 
 export default function PropertyForm() {
@@ -22,15 +23,17 @@ export default function PropertyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isPhoneValidating, setIsPhoneValidating] = useState(false);
+  const [isPhoneApiValidated, setIsPhoneApiValidated] = useState(false); // Tracks if API validation has been performed
 
-  const validatePhone = (phone: string): boolean => {
+  const validatePhoneFormat = (phone: string): boolean => {
     const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
     return phoneRegex.test(phone);
   };
 
-  const handleBlur = (field: keyof FormErrors) => {
+  const handleBlur = async (field: keyof FormErrors) => {
     setTouched(prev => ({ ...prev, [field]: true }));
-    validateForm();
+    await validateForm(field);
   };
 
   const handleAddressSelect = (addressData: AddressData) => {
@@ -54,63 +57,162 @@ export default function PropertyForm() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     updateFormData({ phone: formatted });
-    
-    // Validate phone if touched
+    setIsPhoneApiValidated(false); // Reset API validation status on change
+    setErrors(prev => ({ ...prev, phoneApi: undefined }));
+
     if (touched.phone) {
-      setErrors(prev => ({
-        ...prev,
-        phone: validatePhone(formatted) ? undefined : 'Please enter a valid phone number'
-      }));
+      const newErrors: FormErrors = { ...errors };
+      if (!validatePhoneFormat(formatted)) {
+        newErrors.phone = 'Please enter a valid phone number format (XXX) XXX-XXXX';
+      } else {
+        newErrors.phone = undefined;
+      }
+      setErrors(newErrors);
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formState.address?.trim()) {
-      newErrors.address = 'Please enter a valid property address';
+  const validateNumverify = async (phoneNumber: string): Promise<boolean> => {
+    if (!validatePhoneFormat(phoneNumber)) {
+      setErrors(prev => ({ ...prev, phoneApi: 'Invalid phone number format for API validation.' }));
+      setIsPhoneApiValidated(true); // Mark as "validated" to unblock UI if needed, error will prevent submission
+      return false;
     }
 
-    if (!formState.phone) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!validatePhone(formState.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    setIsPhoneValidating(true);
+    setErrors(prev => ({ ...prev, phoneApi: undefined }));
+    try {
+      const response = await fetch('/api/validate-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: phoneNumber.replace(/\D/g, '') }), // Send unformatted number
+      });
+      const result = await response.json();
+      setIsPhoneApiValidated(true);
+
+      if (!response.ok || !result) {
+        setErrors(prev => ({ ...prev, phoneApi: result.error || 'Phone validation service failed.' }));
+        return false;
+      }
+
+      if (!result.isValid) {
+        setErrors(prev => ({ ...prev, phoneApi: 'This phone number appears to be invalid.' }));
+        return false;
+      }
+      if (!result.isValidLead) {
+         setErrors(prev => ({ ...prev, phoneApi: 'Please provide a personal mobile or landline number. Business numbers are not accepted.' }));
+        return false;
+      }
+      
+      // If valid and a valid lead, clear API error
+      setErrors(prev => ({ ...prev, phoneApi: undefined }));
+      updateFormData({ // Optionally store more details from Numverify if needed
+        carrier: result.carrier,
+        phoneLineType: result.lineType,
+      });
+      return true;
+    } catch (error) {
+      console.error('Numverify validation error:', error);
+      setErrors(prev => ({ ...prev, phoneApi: 'Could not validate phone number. Check connection.' }));
+      setIsPhoneApiValidated(true); // Mark as "validated" to show the error
+      return false;
+    } finally {
+      setIsPhoneValidating(false);
+    }
+  };
+
+  const validateForm = async (field?: keyof FormErrors): Promise<boolean> => {
+    const newErrors: FormErrors = { ...errors };
+    let formIsValid = true;
+
+    const currentAddress = formState.address?.trim();
+    const currentPhone = formState.phone;
+    const currentConsent = formState.consent;
+
+    if (field === 'address' || !field) {
+      if (!currentAddress) {
+        newErrors.address = 'Please enter a valid property address';
+        formIsValid = false;
+      } else {
+        newErrors.address = undefined;
+      }
     }
 
-    if (!formState.consent) {
-      newErrors.consent = 'You must consent to be contacted';
+    if (field === 'phone' || !field) {
+      if (!currentPhone) {
+        newErrors.phone = 'Phone number is required';
+        formIsValid = false;
+      } else if (!validatePhoneFormat(currentPhone)) {
+        newErrors.phone = 'Please enter a valid phone number format (XXX) XXX-XXXX';
+        formIsValid = false;
+      } else {
+        newErrors.phone = undefined;
+        if (currentPhone && field === 'phone' && (!isPhoneApiValidated || newErrors.phoneApi)) {
+          if (!await validateNumverify(currentPhone)) {
+            formIsValid = false;
+          } else {
+            newErrors.phoneApi = undefined;
+          }
+        } else if (errors.phoneApi) {
+            formIsValid = false;
+        }
+      }
     }
-
+    
+    if (field === 'consent' || !field) {
+      if (!currentConsent) {
+        newErrors.consent = 'You must consent to be contacted';
+        formIsValid = false;
+      } else {
+        newErrors.consent = undefined;
+      }
+    }
+    
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return formIsValid && !newErrors.phoneApi;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form before submission
-    const validationErrors: Record<string, string> = {};
-    
+    setTouched({ address: true, phone: true, consent: true });
+    setIsSubmitting(true);
+
+    let localErrors: FormErrors = {};
+    let basicValidationPassed = true;
+
     if (!formState.address?.trim()) {
-      validationErrors.address = 'Address is required';
+      localErrors.address = 'Address is required';
+      basicValidationPassed = false;
     }
-    
-    if (!formState.phone?.trim()) {
-      validationErrors.phone = 'Phone number is required';
-    } else if (!/^\(\d{3}\) \d{3}-\d{4}$/.test(formState.phone)) {
-      validationErrors.phone = 'Invalid phone format. Please use (XXX) XXX-XXXX';
+    if (!formState.phone) {
+      localErrors.phone = 'Phone number is required';
+      basicValidationPassed = false;
+    } else if (!validatePhoneFormat(formState.phone)) {
+      localErrors.phone = 'Invalid phone format. Please use (XXX) XXX-XXXX';
+      basicValidationPassed = false;
     }
-
     if (!formState.consent) {
-      validationErrors.consent = 'You must consent to be contacted';
+      localErrors.consent = 'You must consent to be contacted';
+      basicValidationPassed = false;
     }
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    if (!basicValidationPassed) {
+      setErrors(prev => ({ ...prev, ...localErrors }));
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
+    let numverifyCheckPassed = true;
+    if (formState.phone) {
+      setIsPhoneValidating(true);
+      numverifyCheckPassed = await validateNumverify(formState.phone);
+    }
+
+    if (!numverifyCheckPassed) {
+        setErrors(prev => ({ ...prev, ...localErrors, phoneApi: prev.phoneApi || 'Phone number validation failed.'}));
+        setIsSubmitting(false);
+        return;
+    }
+
     setErrors({});
 
     try {
@@ -150,7 +252,6 @@ export default function PropertyForm() {
         throw new Error(result.error || 'Failed to save lead data');
       }
 
-      // Store leadId in form state for later use
       updateFormData({ leadId: result.leadId });
 
       trackEvent('form_submitted', { 
@@ -210,10 +311,22 @@ export default function PropertyForm() {
               aria-describedby={errors.phone ? 'phone-error' : undefined}
             />
             
-            {errors.phone && touched.phone && (
+            {errors.phone && touched.phone && !errors.phoneApi && (
               <div id="phone-error" className="flex items-center space-x-1 text-red-500 text-sm">
                 <AlertCircle className="h-4 w-4" />
                 <span>{errors.phone}</span>
+              </div>
+            )}
+            {errors.phoneApi && touched.phone && (
+              <div id="phone-api-error" className="flex items-center space-x-1 text-red-500 text-sm mt-1">
+                <AlertCircle className="h-4 w-4" />
+                <span>{errors.phoneApi}</span>
+              </div>
+            )}
+            {isPhoneValidating && (
+              <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
+                <Loader2 className="animate-spin h-4 w-4" />
+                <span>Validating phone...</span>
               </div>
             )}
           </div>
@@ -248,14 +361,14 @@ export default function PropertyForm() {
 
           <button
             type="submit"
-            disabled={isSubmitting || !formState.phone || !formState.consent || !!errors.phone}
+            disabled={isSubmitting || isPhoneValidating || !!errors.phoneApi || !!errors.phone || !!errors.address || !!errors.consent}
             onClick={() => {
-              if (formState.phone && formState.consent && !errors.phone && !isSubmitting) {
+              if (formState.phone && formState.consent && !errors.phone && !errors.phoneApi && !isSubmitting && !isPhoneValidating) {
                 trackConversion('AW-17041108639', 'sghECKX6-fkYELD4yf8p');
               }
             }}
             className={`w-full px-4 py-3 text-lg font-semibold text-white bg-secondary rounded-lg hover:bg-secondary/90 transition-colors
-              ${(isSubmitting || !formState.phone || !formState.consent || !!errors.phone) ? 'opacity-70 cursor-not-allowed' : ''}`}
+              ${(isSubmitting || isPhoneValidating || !!errors.phoneApi || !!errors.phone || !!errors.address || !!errors.consent) ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center">
